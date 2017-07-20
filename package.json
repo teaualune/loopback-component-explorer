@@ -41,6 +41,6 @@
     "lodash": "^3.10.0",
     "loopback-swagger": "^3.0.1",
     "strong-globalize": "^2.6.2",
-    "swagger-ui": "^2.2.5"
+    "swagger-ui-dist": "^3.0.19"
   }
 }

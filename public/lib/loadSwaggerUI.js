@@ -6,12 +6,8 @@
 'use strict';
 
 // Refactoring of inline script from index.html.
-/*global SwaggerUi, log, ApiKeyAuthorization, hljs, window, $ */
+/*global SwaggerUIBundle, log, ApiKeyAuthorization, hljs, window, $ */
 $(function() {
-  // Pre load translate...
-  if (window.SwaggerTranslator) {
-    window.SwaggerTranslator.translate();
-  }
 
   var lsKey = 'swagger_accessToken';
   $.getJSON('config.json', function(config) {
@@ -23,54 +19,46 @@ $(function() {
   function loadSwaggerUi(config) {
     var methodOrder = ['get', 'head', 'options', 'put', 'post', 'delete'];
     /* eslint-disable camelcase */
-    window.swaggerUi = new SwaggerUi({
+    window.swaggerUi = new SwaggerUIBundle({
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
       validatorUrl: null,
       url: config.url || '/swagger/resources',
       apiKey: '',
-      dom_id: 'swagger-ui-container',
+      dom_id: '#swagger-ui-container',
       supportHeaderParams: true,
-      onComplete: function(swaggerApi, swaggerUi) {
-        log('Loaded SwaggerUI');
-        log(swaggerApi);
-        log(swaggerUi);
-
-        if (window.SwaggerTranslator) {
-          window.SwaggerTranslator.translate();
-        }
-
-        $('pre code').each(function(i, e) {
-          hljs.highlightBlock(e);
-        });
-
-        // Recover accessToken from localStorage if present.
-        if (window.localStorage) {
-          var key = window.localStorage.getItem(lsKey);
-          if (key) {
-            $('#input_accessToken').val(key).submit();
-          }
-        }
-      },
-      onFailure: function(data) {
-        log('Unable to Load SwaggerUI');
-        log(data);
-      },
       docExpansion: 'none',
       highlightSizeThreshold: 16384,
       apisSorter: 'alpha',
+      displayOperationId: true,
+      displayRequestDuration: true,
       operationsSorter: function(a, b) {
-        var pathCompare = a.path.localeCompare(b.path);
+        var pathCompare = a.get('path').localeCompare(b.get('path'));
         return pathCompare !== 0 ?
           pathCompare :
-          methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method);
+          methodOrder.indexOf(a.get('method')) - methodOrder.indexOf(b.get('method'));
       },
     });
     /* eslint-disable camelcase */
 
+    log('Loaded SwaggerUI');
+
+    // $('pre code').each(function(i, e) {
+    //   hljs.highlightBlock(e);
+    // });
+
+    if (window.localStorage) {
+      var key = window.localStorage.getItem(lsKey);
+      if (key) {
+        $('#input_accessToken').val(key).submit();
+      }
+    }
+
     $('#explore').click(setAccessToken);
     $('#api_selector').submit(setAccessToken);
     $('#input_accessToken').keyup(onInputChange);
-
-    window.swaggerUi.load();
   }
 
   function setAccessToken(e) {
